@@ -245,8 +245,8 @@
                 <td><code style="background:#eee; padding:2px 5px; border-radius:4px">${item.id}</code></td>
                 <td>${gameNames}</td>
                 <td>${status}</td>
-                <td style="font-size:0.9rem; font-weight: 500;" title="Ngày hết hạn: ${new Date(item.expireAt).toLocaleString('vi-VN')}">
-                    ${new Date(item.expireAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                <td style="font-size:0.9rem; font-weight: 500;">
+                    ${new Date(item.expireAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: "2-digit"})}
                 </td>
                 <td>
                     <label class="switch">
