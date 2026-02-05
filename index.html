@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Tập Cùng Thầy Thuận</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0fdf4; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #1e293b; }
+        .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 450px; width: 90%; }
+        h1 { color: #15803d; margin-bottom: 10px; font-size: 1.6rem; }
+        p.desc { color: #64748b; margin-bottom: 25px; font-size: 0.95rem; }
+        .input-box { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 12px; border: 2px solid #e2e8f0; }
+        .input-box input { flex: 1; border: none; background: transparent; padding: 10px; outline: none; font-size: 1rem; }
+        .btn-go { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .game-opt { display: block; width: 100%; padding: 15px; margin-top: 10px; border: 2px solid #22c55e; background: white; border-radius: 12px; cursor: pointer; font-weight: 600; text-align: left; transition: 0.2s; }
+        .game-opt:hover { background: #f0fdf4; transform: translateX(5px); }
+    </style>
+</head>
+<body>
+
+<div id="app" class="card">
+    <p>Đang tải hệ thống...</p>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyB0CNdoLDZU9pF5CPHuVGMrWnAdzQSZcgo",
+        authDomain: "thuan10vectors.firebaseapp.com",
+        databaseURL: "https://thuan10vectors-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "thuan10vectors",
+        storageBucket: "thuan10vectors.firebasestorage.app",
+        messagingSenderId: "965608552389",
+        appId: "1:965608552389:web:2064690144d13ff9b1bdac"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const linkId = urlParams.get('id');
+    const app = document.getElementById('app');
+
+    if (!linkId) {
+        // GIAO DIỆN TRANG CHỦ
+        app.innerHTML = `
+            <h1>Chào mừng các em!</h1>
+            <p class="desc">Trang web được tạo bởi thầy Thuận nhằm củng cố kiến thức cho học sinh.</p>
+            <div class="input-box">
+                <input type="text" id="gameId" placeholder="Nhập mã ID game...">
+                <button class="btn-go" onclick="goToGame()">Vào Game</button>
+            </div>
+        `;
+    } else {
+        // LOGIC KIỂM TRA ID
+        db.ref('links/' + linkId).once('value').then(s => {
+            const data = s.val();
+            if (!data || data.isBlocked || Date.now() > data.expireAt) {
+                app.innerHTML = `<h2 style="color:red">Mã không hợp lệ hoặc hết hạn</h2><button onclick="location.href='index.html'" class="btn-go">Quay lại</button>`;
+                return;
+            }
+
+            if (data.targetFiles.length === 1) {
+                runGame(data.targetFiles[0].link);
+            } else {
+                app.innerHTML = `<h1>🎮 Chọn Trò Chơi</h1>` + data.targetFiles.map(g => `
+                    <button class="game-opt" onclick="runGame('${g.link}')">🔹 ${g.name}</button>
+                `).join('');
+            }
+        });
+    }
+
+    function goToGame() {
+        const id = document.getElementById('gameId').value.trim();
+        if(id) window.location.href = 'index.html?id=' + id;
+    }
+
+    function runGame(url) {
+        app.innerHTML = "<p>Đang tải dữ liệu trò chơi...</p>";
+        fetch(url).then(r => r.text()).then(html => {
+            document.open();
+            // Xử lý đường dẫn tương đối cho file trong thư mục Pages
+            const base = url.includes('/') ? `<base href="${url.substring(0, url.lastIndexOf('/') + 1)}">` : '';
+            document.write(html.replace('<head>', '<head>' + base));
+            document.close();
+        });
+    }
+</script>
+</body>
+</html>
